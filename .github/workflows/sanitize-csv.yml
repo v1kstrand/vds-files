@@ -1,0 +1,56 @@
+name: Sanitize discovery_form.csv
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "data/discovery_form.csv"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sanitize-csv
+  cancel-in-progress: false
+
+jobs:
+  sanitize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sanitize CSV newlines
+        run: |
+          python - <<'PY'
+          import pathlib
+          p = pathlib.Path("data/discovery_form.csv")
+          text = p.read_text(encoding="utf-8")
+
+          # If the whole file was accidentally wrapped in quotes, unwrap
+          if text.startswith('"') and text.endswith('"'):
+              text = text[1:-1]
+
+          # Turn literal backslash+n into a real newline
+          text = text.replace("\\n", "\n")
+
+          # Normalize CRLF/CR to LF
+          text = text.replace("\r\n", "\n").replace("\r", "\n")
+
+          # Ensure exactly one trailing newline
+          text = text.strip("\n") + "\n"
+
+          p.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Commit changes (if any)
+        run: |
+          if git diff --quiet; then
+            echo "No sanitation changes."
+          else
+            git config user.name  "csv-bot"
+            git config user.email "csv-bot@users.noreply.github.com"
+            git add data/discovery_form.csv
+            git commit -m "Sanitize CSV newlines"
+            git push
+          fi
