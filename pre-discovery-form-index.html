@@ -227,33 +227,26 @@
     const form = $('#preDiscoveryForm');
 
     // --- helper: POST to Zoho Flow with CORS fallback ---
-    async function postToFlow(json){
-      try {
-        const res = await fetch(FLOW_URL, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(json),
-          credentials: 'omit'
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return true;
-      } catch (err) {
-        console.warn('CORS/network issue; retrying with no-cors...', err);
-        try {
-          await fetch(FLOW_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(json)
-          });
-          // no-cors returns an opaque response; assume delivered
-          return true;
-        } catch (e) {
-          console.error('no-cors fallback failed', e);
-          return false;
-        }
-      }
+      async function postToFlow(json){
+    // Flatten into application/x-www-form-urlencoded
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(json)) {
+      if (Array.isArray(v)) v.forEach(x => params.append(k + '[]', x));
+      else params.append(k, v ?? '');
     }
+    try {
+      await fetch(FLOW_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: params.toString(),     // no preflight
+        mode: 'no-cors'              // we don't need to read the response
+      });
+      return true;
+    } catch (e) {
+      console.error(e);
+      return false;
+    }
+  }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
