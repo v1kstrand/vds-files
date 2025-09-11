@@ -287,6 +287,8 @@
         time_other: val('#time_other_text'),
         submitted_at: new Date().toISOString()
       };
+      payload.company_website =
+      document.querySelector('input[name="company_website"]')?.value || '';
       // Normalize a few fields
       payload.email = (payload.email || '').trim().toLowerCase();
       
