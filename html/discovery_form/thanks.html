@@ -1,7 +1,160 @@
-<!doctype html><meta charset="utf-8">
-<title>Thanks · VDS</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>body{font-family:system-ui,Segoe UI,Roboto,Inter;max-width:680px;margin:6rem auto;padding:0 16px;line-height:1.5}h1{font-size:1.8rem}</style>
-<h1>Thanks! 🎉</h1>
-<p>We received your pre-discovery submission. We’ll review it and get back to you shortly.</p>
-<p><a href="https://vdsai.se">← VDS Home</a></p>
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <title>Tack – Pre-Discovery · Vikstrand Deep Solutions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tack! Vi har tagit emot ert Pre-Discovery-underlag och mötet är bekräftat.">
+  <meta name="theme-color" content="#0b1220">
+  <meta property="og:title" content="Tack – Pre-Discovery · Vikstrand Deep Solutions">
+  <meta property="og:description" content="Mötet är bokat. Vi uppskattar informationen och förbereder inför genomgången.">
+  <meta property="og:image" content="https://files.vdsai.se/imgs/vds_smal3.jpg">
+  <meta property="og:type" content="website">
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#0f172a;
+      --text:#e6edf3;
+      --muted:#9fb0c3;
+      --accent:#60a5fa;
+      --accent-strong:#3b82f6;
+      --border:#1f2937;
+      --ok:#22c55e;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 10% 0%, rgba(59,130,246,.15), transparent 60%),
+        radial-gradient(1000px 800px at 90% 10%, rgba(99,102,241,.12), transparent 60%),
+        var(--bg);
+      letter-spacing:.2px;
+    }
+    .wrap{max-width:900px;margin:56px auto;padding:0 18px}
+    header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+    .logo{
+      width:180px; height:48px; /* rektangulär */
+      border-radius:12px; overflow:hidden;
+      box-shadow:0 10px 30px rgba(96,165,250,.25);
+      background:#0b1220;
+    }
+    .logo img{width:100%;height:100%;object-fit:cover;display:block}
+    h1{font-size:clamp(24px,3.2vw,32px);margin:.1rem 0 .25rem}
+    .subtitle{color:var(--muted);margin:0 0 14px}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:22px 18px;
+      box-shadow:0 10px 40px rgba(0,0,0,.25);
+      backdrop-filter:blur(6px);
+    }
+    .ok-badge{
+      display:inline-flex;align-items:center;gap:8px;
+      background:rgba(34,197,94,.12); color:#dcfce7;
+      border:1px solid rgba(34,197,94,.35);
+      padding:8px 10px;border-radius:12px;font-weight:600;margin-bottom:10px
+    }
+    .ok-dot{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(34,197,94,.25)}
+    .lead{font-size:16px;margin:8px 0 14px}
+    .muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px;margin-top:14px}
+    @media(min-width:760px){ .grid{grid-template-columns:1.2fr .8fr} }
+
+    .steps{display:grid;gap:10px;margin:8px 0}
+    .step{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:#0b1220}
+    .step-num{flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+      background:linear-gradient(135deg,var(--accent),var(--accent-strong));color:white;font-weight:700}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+    .btn{
+      appearance:none;border:0;cursor:pointer;text-decoration:none;
+      background:linear-gradient(135deg,var(--accent),var(--accent-strong));
+      color:white;font-weight:700;padding:12px 14px;border-radius:14px;box-shadow:0 10px 30px rgba(59,130,246,.35)
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .btn-ghost{
+      background:transparent;border:1px solid var(--border);color:var(--text);font-weight:600
+    }
+    .panel{border:1px solid var(--border);border-radius:14px;padding:14px 12px}
+    .small{font-size:13px}
+    ul.clean{margin:.25rem 0 0 1.1rem}
+    ul.clean li{margin:.25rem 0}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo" aria-hidden="true">
+        <img src="https://files.vdsai.se/imgs/vds_smal3.jpg" alt="Vikstrand Deep Solutions">
+      </div>
+      <div>
+        <h1>Tack för underlaget!</h1>
+        <p class="subtitle">Mötet är bekräftat – ert formulär hjälper oss att förbereda en träffsäker pilot.</p>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="ok-badge"><span class="ok-dot" aria-hidden="true"></span> Inskickat</div>
+
+      <p class="lead">
+        Vi uppskattar informationen och hoppas att vi kan hitta givande AI-lösningar för ert företag.
+      </p>
+
+      <div class="grid">
+        <!-- Vänster kolumn: Inför mötet -->
+        <section aria-labelledby="next-steps">
+          <h2 id="next-steps" class="sr-only">Inför mötet</h2>
+          <div class="steps">
+            <div class="step">
+              <div class="step-num" aria-hidden="true">1</div>
+              <div>
+                <strong>Genomgång av ert underlag</strong>
+                <div class="muted small">Vi sammanfattar mål, datakällor och möjlig omfattning för piloten.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num" aria-hidden="true">2</div>
+              <div>
+                <strong>Eventuell NDA</strong>
+                <div class="muted small">Om det behövs startar vi med ett sekretessavtal innan detaljer delas.</div>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-num" aria-hidden="true">3</div>
+              <div>
+                <strong>Agenda i korthet</strong>
+                <div class="muted small">Målbild → Databild → Förslag på pilotupplägg och nästa steg.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <!-- Ersätt # med faktisk länk vid behov, eller ta bort knappen -->
+            <!-- <a class="btn" href="#" aria-label="Öppna bokningsbekräftelsen">Öppna bokningsbekräftelsen</a> -->
+            <a class="btn btn-ghost" href="https://vdsai.se" aria-label="Gå till startsidan">← Till startsidan</a>
+          </div>
+        </section>
+
+        <!-- Höger kolumn: Liten checklista -->
+        <aside class="panel" aria-labelledby="checklist">
+          <h2 id="checklist" class="sr-only">Checklista</h2>
+          <p class="small"><strong>Valfritt att förbereda</strong></p>
+          <ul class="clean small muted">
+            <li>1–2 representativa exempel (dokument, e-post, bilder eller datautdrag).</li>
+            <li>Översikt över var data finns (t.ex. Drive/SharePoint, CRM/ERP, databaser).</li>
+            <li>En tydlig “vinnande effekt” – vad skulle göra piloten till en fullträff.</li>
+          </ul>
+        </aside>
+      </div>
+
+      <footer class="small muted" style="margin-top:12px">
+        Vi använder den inskickade informationen enbart för att planera er kostnadsfria pilot och delar den inte med tredje part.
+      </footer>
+    </div>
+  </div>
+</body>
+</html>
