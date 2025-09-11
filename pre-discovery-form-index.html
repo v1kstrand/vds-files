@@ -287,6 +287,29 @@
         time_other: val('#time_other_text'),
         submitted_at: new Date().toISOString()
       };
+      // Normalize a few fields
+      payload.email = (payload.email || '').trim().toLowerCase();
+      
+      // Primary goal: use "Other" text if chosen
+      payload.goal_final =
+        payload.primary_goal !== 'Other'
+          ? payload.primary_goal
+          : (payload.primary_goal_other || 'Other');
+      
+      // Role / Time with "Other"
+      payload.role_final =
+        payload.role !== 'Other' ? payload.role : (payload.role_other || 'Other');
+      
+      payload.time_final =
+        payload.time !== 'Other' ? payload.time : (payload.time_other || 'Other');
+      
+      // Data sources: join and include custom "Other" text if present
+      const ds = Array.isArray(payload.data_sources) ? payload.data_sources.filter(Boolean) : [];
+      if (ds.includes('Other') && payload.data_sources_other) {
+        ds.splice(ds.indexOf('Other'), 1);       // remove literal "Other"
+        ds.push(payload.data_sources_other);     // add the actual text
+      }
+      payload.data_sources_csv = ds.join(', ');
 
       const delivered = await postToFlow(payload);
 
