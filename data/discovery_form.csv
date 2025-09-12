@@ -1,5 +1,6 @@
-submitted_at,email,goal,role,availability,data_sources,outcome
-2025-09-11T18:28:37.298Z,"david.vikstrand@gmail.com","Workflow Automation","Manager","< 0.5 h/week","Sample files",""
-2025-09-11T18:28:37.298Z,"david.vikstrand@gmail.com","Workflow Automation","Manager","< 0.5 h/week","Sample files",""
-2025-09-11T19:31:54.693Z,"david.avikstrand@gmail.com","Forecasting/Analytics","Owner","< 0.5 h/week","Sample files, Images/Video, csv","test"
-2025-09-12T11:20:45.643Z,"david.vikstrand@gmail.com","Workflow Automation","Manager","< 0.5 h/week","Cloud folders (Drive/SharePoint)","test5"
+"submitted_at","email","goal","role","availability","data_sources","outcome","company_website"
+"2025-09-12T11:27:23Z","","","","","","",""
+"2025-09-12T11:35:15Z","david.vikstrand@gmail.com","Cost/Efficiency","Owner","< 0.5 h/week","Sample files","test6",""
+"2025-09-12T11:38:44Z","david.vikstrand@gmail.com","Forecasting/Analytics","Developer","0.5–1.0 h/week","API/Database","tst8",""
+"2025-09-12T11:40:06Z","david.vikstrand@gmail.com","Search/Retrieval (RAG)","Developer","< 0.5 h/week","API/Database","tst5",""
+"2025-09-12T11:40:53Z","david.vikstrand@gmail.com","Cost/Efficiency","Developer","0.5–1.0 h/week","Sample files","test7",""
