@@ -2,13 +2,23 @@ name: Store form submit as JSON
 on:
   repository_dispatch:
     types: [form_submit]
+
 permissions:
   contents: write
+
+# Queue runs so only one writes at a time (prevents push races)
+concurrency:
+  group: store-form-json
+  cancel-in-progress: false
+
 jobs:
   save:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # we need history for rebase
+
       - name: Save payload to data/submissions/*.json
         run: |
           mkdir -p data/submissions
@@ -21,10 +31,26 @@ jobs:
           out = pathlib.Path("data/submissions")/fname
           out.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
           PY
-      - name: Commit JSON
+
+      - name: Commit & push (with rebase retry)
         run: |
-          git config user.name "github-actions"
+          set -e
+          git config user.name  "github-actions"
           git config user.email "actions@users.noreply.github.com"
           git add data/submissions
-          git commit -m "form: store JSON submission" || echo "No changes"
-          git push
+          # nothing to commit?
+          if git diff --cached --quiet; then
+            echo "No changes"; exit 0
+          fi
+          git commit -m "form: store JSON submission"
+          BRANCH="$(git symbolic-ref --quiet --short HEAD || echo main)"
+          for i in 1 2 3; do
+            git pull --rebase origin "$BRANCH" || true
+            if git push; then
+              exit 0
+            fi
+            echo "Push failed, retrying ($i/3)..."
+            sleep 2
+          done
+          echo "Push failed after 3 attempts" >&2
+          exit 1
