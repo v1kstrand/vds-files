@@ -1,4 +1,4 @@
-name: Store form submit as JSON
+name: Store form submit as JSON (and rebuild CSV)
 on:
   repository_dispatch:
     types: [form_submit]
@@ -6,18 +6,18 @@ on:
 permissions:
   contents: write
 
-# Queue runs so only one writes at a time (prevents push races)
+# One-at-a-time across the repo to avoid push races
 concurrency:
-  group: store-form-json
+  group: forms-io
   cancel-in-progress: false
 
 jobs:
-  save:
+  save_and_merge:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # we need history for rebase
+          fetch-depth: 0
 
       - name: Save payload to data/submissions/*.json
         run: |
@@ -32,23 +32,44 @@ jobs:
           out.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
           PY
 
-      - name: Commit & push (with rebase retry)
+      - name: Rebuild CSV from all JSON
+        run: |
+          python - <<'PY'
+          import csv, json, glob, os
+          from datetime import datetime
+          fields = ["submitted_at","email","goal","role","availability","data_sources","outcome","company_website"]
+          rows = []
+          for path in sorted(glob.glob("data/submissions/*.json")):
+              with open(path, encoding="utf-8") as f:
+                  d = json.load(f)
+              rows.append([d.get(k,"") for k in fields])
+
+          def parse(ts):
+              try: return datetime.fromisoformat(ts.replace('Z','+00:00'))
+              except: return datetime.min
+          rows.sort(key=lambda r: parse(rows[0][0]) if rows and rows[0][0] else datetime.min)
+
+          os.makedirs("data", exist_ok=True)
+          with open("data/discovery_form.csv","w", newline="", encoding="utf-8") as f:
+              w = csv.writer(f, quoting=csv.QUOTE_ALL)
+              w.writerow(fields)
+              w.writerows(rows)
+          PY
+
+      - name: Commit & push (rebase-retry)
         run: |
           set -e
           git config user.name  "github-actions"
           git config user.email "actions@users.noreply.github.com"
-          git add data/submissions
-          # nothing to commit?
+          git add data/submissions data/discovery_form.csv
           if git diff --cached --quiet; then
             echo "No changes"; exit 0
           fi
-          git commit -m "form: store JSON submission"
+          git commit -m "form: add submission + rebuild CSV"
           BRANCH="$(git symbolic-ref --quiet --short HEAD || echo main)"
           for i in 1 2 3; do
             git pull --rebase origin "$BRANCH" || true
-            if git push; then
-              exit 0
-            fi
+            if git push; then exit 0; fi
             echo "Push failed, retrying ($i/3)..."
             sleep 2
           done
