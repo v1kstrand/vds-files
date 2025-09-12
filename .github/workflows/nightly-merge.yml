@@ -1,0 +1,48 @@
+name: Nightly merge submissions -> CSV
+on:
+  schedule:
+    - cron: "5 1 * * *"   # 01:05 UTC (~03:05 Stockholm during CEST)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: merge-csv
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build CSV from JSON files
+        run: |
+          python - <<'PY'
+          import csv, json, glob, os
+          from datetime import datetime
+          fields = ["submitted_at","email","goal","role","availability","data_sources","outcome","company_website"]
+          rows = []
+          for path in sorted(glob.glob("data/submissions/*.json")):
+              with open(path, encoding="utf-8") as f:
+                  d = json.load(f)
+              rows.append([d.get(k,"") for k in fields])
+
+          def parse(ts):
+              try: return datetime.fromisoformat(ts.replace('Z','+00:00'))
+              except: return datetime.min
+          rows.sort(key=lambda r: parse(r[0]))
+
+          os.makedirs("data", exist_ok=True)
+          with open("data/discovery_form.csv","w", newline="", encoding="utf-8") as f:
+              w = csv.writer(f, quoting=csv.QUOTE_ALL)
+              w.writerow(fields)
+              w.writerows(rows)
+          PY
+      - name: Commit CSV
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/discovery_form.csv
+          git diff --cached --quiet || git commit -m "merge: nightly CSV rebuild"
+          git push
