@@ -85,7 +85,12 @@
       </div>
     </header>
 
-    <form id="preDiscoveryForm" novalidate>
+    <form id="preDiscoveryForm"
+      action="https://forms.vdsai.se/submit"
+      method="post"
+      accept-charset="utf-8">
+      <input type="hidden" name="form_key" value="7f4e5f6850ff1dbdb8fc2ec668a931ef5f833cbd404315df1d8e7f7c922b5ea4">
+      <input type="hidden" name="redirect_to" value="https://vdsai.se/html/discovery_form/thanks.html">
       <p class="note">Vi använder denna information enbart för att avgränsa ert kostnadsfria Discovery-projekt. Vid behov börjar vi med ett sekretessavtal (NDA).</p>
 
       <div class="group">
@@ -184,9 +189,6 @@
 
   <script>
   (function(){
-    // Klistra in din Zoho Flow-webhook här:
-    const FLOW_URL = 'https://flow.zoho.eu/20108725821/flow/webhook/incoming?zapikey=1001.6c5cddda3ccf41bd19b43b5f53bc5418.edc3800ef8a8355b3063ed88ef2b59f4&isdebug=false';
-    //const FLOW_URL = 'https://flow.zoho.eu/20108725821/flow/webhook/incoming?zapikey=1001.2bce9560bcf7a8d4e900d2b155cd70d0.8d2c42c038f2025c7eefa55967142a5b&isdebug=true';
 
     const $  = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -226,111 +228,6 @@
     updateGoalOther(); updateRoleOther(); updateTimeOther(); updateDsOther(); updateDsNoneExclusivity();
 
     const form = $('#preDiscoveryForm');
-
-    // --- POST till Zoho Flow med CORS-fallback ---
-    async function postToFlow(json){
-      const params = new URLSearchParams();
-      for (const [k, v] of Object.entries(json)) {
-        if (Array.isArray(v)) v.forEach(x => params.append(k + '[]', x));
-        else params.append(k, v ?? '');
-      }
-      try {
-        await fetch(FLOW_URL, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: params.toString(),
-          mode: 'no-cors'
-        });
-        return true;
-      } catch (e) {
-        console.error(e);
-        return false;
-      }
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      ['pg','ds','role','time'].forEach(id => $('#'+id+'-error')?.classList.add('hidden'));
-
-      const emailValid = $('#email').checkValidity();
-      const goalValid  = $$('#pg-group input[type="radio"]').some(r=> r.checked);
-      const roleValid  = $$('#role-group input[type="radio"]').some(r=> r.checked);
-      const timeValid  = $$('#time-group input[type="radio"]').some(r=> r.checked);
-      const dsValid    = $$('input[name="data_sources"]').some(cb => cb.checked);
-
-      let ok = emailValid && goalValid && roleValid && timeValid && dsValid;
-      if (!goalValid) $('#pg-error')?.classList.remove('hidden');
-      if (!dsValid)   $('#ds-error')?.classList.remove('hidden');
-      if (!roleValid) $('#role-error')?.classList.remove('hidden');
-      if (!timeValid) $('#time-error')?.classList.remove('hidden');
-      if (!emailValid) $('#email').reportValidity();
-      if (!ok) return;
-
-      const val = (sel) => ( $(sel)?.value || '' );
-      const checkedVal  = (sel) => { const el = $$(sel).find(x=>x.checked); return el? el.value : ''; };
-      const checkedVals = (sel) => $$(sel).filter(x=>x.checked).map(x=>x.value);
-
-      // Honeypot (om ifyllt = bot)
-      const honeypot = document.querySelector('input[name="company_website"]');
-      if (honeypot && honeypot.value) return;
-
-      const payload = {
-        email: val('#email'),
-        primary_goal: checkedVal('#pg-group input[type="radio"]'),
-        primary_goal_other: val('#primary_goal_other'),
-        outcome: val('#outcome'),
-        data_sources: checkedVals('input[name="data_sources"]'),
-        data_sources_other: val('#data_sources_other'),
-        role: checkedVal('#role-group input[type="radio"]'),
-        role_other: val('#role_other_text'),
-        time: checkedVal('#time-group input[type="radio"]'),
-        time_other: val('#time_other_text'),
-        submitted_at: new Date().toISOString()
-      };
-      payload.company_website =
-        document.querySelector('input[name="company_website"]')?.value || '';
-
-      // Normalisering
-      payload.email = (payload.email || '').trim().toLowerCase();
-
-      // Primary goal: om “Other”, använd fritext
-      payload.goal_final =
-        payload.primary_goal !== 'Other'
-          ? payload.primary_goal
-          : (payload.primary_goal_other || 'Other');
-
-      // Roll/Tid med “Other”
-      payload.role_final =
-        payload.role !== 'Other' ? payload.role : (payload.role_other || 'Other');
-
-      payload.time_final =
-        payload.time !== 'Other' ? payload.time : (payload.time_other || 'Other');
-
-      // Datakällor CSV (ersätt “Other” med fritext om finns)
-      const ds = Array.isArray(payload.data_sources) ? payload.data_sources.filter(Boolean) : [];
-      if (ds.includes('Other') && payload.data_sources_other) {
-        ds.splice(ds.indexOf('Other'), 1);
-        ds.push(payload.data_sources_other);
-      }
-      payload.data_sources_csv = ds.join(', ');
-
-      const delivered = await postToFlow(payload);
-
-      if (delivered) {
-        // Enkel tack-sida i samma mapp
-        window.location.href = 'thanks.html';
-        return;
-      }
-
-      // Fallback lokalt
-      $('#success')?.classList.remove('hidden');
-      const out = $('#result');
-      if (out) {
-        out.classList.remove('hidden');
-        out.value = JSON.stringify(payload, null, 2);
-      }
-      alert('Skickat lokalt. Vi kunde inte nå webhooken — kontrollera URL/CORS.');
-    });
   })();
   </script>
 </body>
