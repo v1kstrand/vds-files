@@ -1,0 +1,20 @@
+{
+  "availability": "0.5–1.0 h/week",
+  "company_website": "",
+  "data_sources": "API/Database",
+  "debug": {
+    "data_sources_list": [
+      "API/Database"
+    ],
+    "primary_goal_other": "",
+    "primary_goal_raw": "Cost/Efficiency",
+    "role_other": "",
+    "time_other": "",
+    "time_raw": "0.5–1.0 h/week"
+  },
+  "email": "david.vikstrand@gmail.com",
+  "goal": "Cost/Efficiency",
+  "outcome": "Det låter som en kaffe på förhand ",
+  "role": "Manager",
+  "submitted_at": "2025-09-12T14:40:12Z"
+}
