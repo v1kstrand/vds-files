@@ -122,7 +122,7 @@
       <div class="group">
         <label for="email">E-post <span class="req" aria-hidden="true">* Obligatoriskt</span></label>
         <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required aria-describedby="emailHelp" />
-        <div id="emailHelp" class="help">Vänligen ange er email.</div>
+        <div id="emailHelp" class="help">Vänligen ange er epost.</div>
       </div>
 
       <div class="grid-2">
@@ -139,7 +139,7 @@
           </div>
           <div id="pg-help" class="help">Vad är er främsta ambition med Discovery projektet?</div>
           <div id="goal_other_wrap" class="inline-other hidden">
-            <label for="primary_goal_other" class="help" style="font-weight:600">Om “Annat”, ange vilket</label>
+            <label for="primary_goal_other" class="help" style="font-weight:600">Om “Annat”, ange mål</label>
             <input type="text" id="primary_goal_other" name="primary_goal_other" placeholder="Beskriv ert mål" />
           </div>
           <div id="pg-error" class="error hidden" role="alert">Välj ett huvudmål.</div>
@@ -147,14 +147,14 @@
 
         <div>
           <label for="outcome">Har ni några specifika mål eller mätvärden ni vill uppnå?</label>
-          <textarea id="outcome" name="outcome" placeholder="T.ex. ”Minska offerttid med 50 %” eller ”Auto-klassa inkommande e-post”"></textarea>
+          <textarea id="outcome" name="outcome" placeholder="T.ex. ”Minska offerttid” eller ”Auto-klassa inkommande e-post”"></textarea>
         </div>
       </div>
 
       <fieldset>
         <legend>Ange datakällor <span class="req" aria-hidden="true">*</span></legend>
         <p id="ds-help" class="help">Välj datakällor som kommer vara tillgängliga under Discovery-projektet.
-        Detta kommer vara grunden som VDS bygger er anpassade AI-modell utifrån.</p>
+        VDS bygger er anpassade AI-modell utifrån denna data</p>
         <div class="row" role="group" aria-describedby="ds-help">
           <label class="chip"><input type="checkbox" name="data_sources" value="Sample files"> Exempelfiler</label>
           <label class="chip"><input type="checkbox" name="data_sources" value="API/Database"> API/Databas</label>
@@ -183,7 +183,7 @@
             <label class="chip"><input type="radio" id="role_other" name="role" value="Other"> Annat</label>
           </div>
           <div id="role_other_wrap" class="inline-other hidden">
-            <label for="role_other_text" class="help" style="font-weight:600">Om “Annat”, ange vilken</label>
+            <label for="role_other_text" class="help" style="font-weight:600">Om “Annat”, ange roll</label>
             <!-- rename to role_other -->
             <input type="text" id="role_other_text" name="role_other" placeholder="Din roll" />
           </div>
