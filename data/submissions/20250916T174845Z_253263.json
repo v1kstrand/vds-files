@@ -1,0 +1,21 @@
+{
+  "availability": "0.5–1.0 h/week",
+  "company_website": "",
+  "data_sources": "API/Database, Images/Video",
+  "debug": {
+    "data_sources_list": [
+      "API/Database",
+      "Images/Video"
+    ],
+    "primary_goal_other": "",
+    "primary_goal_raw": "Workflow Automation",
+    "role_other": "",
+    "time_other": "",
+    "time_raw": "0.5–1.0 h/week"
+  },
+  "email": "david.vikstrand@gmail.com",
+  "goal": "Workflow Automation",
+  "outcome": "test",
+  "role": "Project/Product Lead",
+  "submitted_at": "2025-09-16T17:48:33Z"
+}
