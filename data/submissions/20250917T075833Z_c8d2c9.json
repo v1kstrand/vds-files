@@ -1,0 +1,21 @@
+{
+  "availability": "> 1 h/week",
+  "company_website": "",
+  "data_sources": "Sample files, Cloud folders (Drive/SharePoint)",
+  "debug": {
+    "data_sources_list": [
+      "Sample files",
+      "Cloud folders (Drive/SharePoint)"
+    ],
+    "primary_goal_other": "",
+    "primary_goal_raw": "Workflow Automation",
+    "role_other": "",
+    "time_other": "",
+    "time_raw": "> 1 h/week"
+  },
+  "email": "david.vikstrand@gmail.com",
+  "goal": "Workflow Automation",
+  "outcome": "",
+  "role": "Project/Product Lead",
+  "submitted_at": "2025-09-17T07:58:23Z"
+}
