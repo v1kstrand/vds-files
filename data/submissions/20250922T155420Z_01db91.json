@@ -1,0 +1,20 @@
+{
+  "availability": "2",
+  "company_website": "",
+  "data_sources": "API/Database",
+  "debug": {
+    "data_sources_list": [
+      "API/Database"
+    ],
+    "primary_goal_other": "",
+    "primary_goal_raw": "Workflow Automation",
+    "role_other": "",
+    "time_other": "2",
+    "time_raw": "Other"
+  },
+  "email": "c0nspiracy0f0nee@gmail.com",
+  "goal": "Workflow Automation",
+  "outcome": "test",
+  "role": "Technical Lead/Developer",
+  "submitted_at": "2025-09-22T15:54:12Z"
+}
