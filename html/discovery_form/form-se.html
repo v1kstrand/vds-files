@@ -92,19 +92,19 @@
     @media (min-width: 720px){ .grid-2{ grid-template-columns: 1fr 1fr } }
   </style>
 
-<!-- Goat Counter Start-->
-<!-- GoatCounter: bare ?tag (letters/digits . _ -), 5s delayed EVENT named by the tag, auto-clean URL -->
+<!-- Goat Counter Start -->
+<!-- GoatCounter: one event "formular", per-ID via referrer, 5s delay, bare ?token, clean URL -->
 <script>
 (function () {
-  // 1) Capture bare ?tag (first token before '&'); sanitize to [A-Za-z0-9._-], max 80 chars
+  // 1) Capture bare ?token (first segment before '&'); allow [A-Za-z0-9._-], max 80 chars
   var m   = (location.search || '').match(/^\?([^=&]+)(?:$|&)/);
-  var TAG = m ? decodeURIComponent(m[1]).replace(/[^A-Za-z0-9._-]/g,'').slice(0,80) : null;
-  var EVT_SENT = false;
+  var TOKEN = m ? decodeURIComponent(m[1]).replace(/[^A-Za-z0-9._-]/g,'').slice(0,80) : null;
+  var SENT = false;
 
-  // 2) Configure GoatCounter BEFORE loading count.js (no auto pageview; don't append id)
+  // 2) Configure GoatCounter BEFORE loading count.js (no auto pageview; keep paths clean)
   window.goatcounter = {
     no_onload: true,
-    path: function (p) { return p; } // don't add id or query params
+    path: function (p) { return p; } // don't add params to GC path
   };
 
   // Helper: wait until goatcounter.count exists
@@ -115,28 +115,29 @@
     },150);
   }
 
-  // 3) 5s visible-time gate: send ONE event named exactly as the tag
+  // 3) 5s visible-time gate: send ONE event "formular" with the ID in referrer
   function start(){
-    if (!TAG) return; // no tag → don't log
+    if (!TOKEN) return; // no token → don't log
     var timer;
     function arm(){ clearTimeout(timer); timer = setTimeout(function(){
-      if (EVT_SENT) return; EVT_SENT = true;
+      if (SENT) return; SENT = true;
       try {
         window.goatcounter.count({
-          path: TAG,         // event name = the tag (must not start with '/')
+          path: 'formular',     // single event bucket
           event: true,
-          title: 'view: ' + TAG
+          title: 'view',        // optional
+          referrer: TOKEN       // per-ID breakdown appears under Referrers
         });
       } catch(e){}
     }, 5000); }
-    if (document.visibilityState === 'visible' && !EVT_SENT) arm();
+    if (document.visibilityState === 'visible' && !SENT) arm();
     document.addEventListener('visibilitychange', function(){
-      if (document.visibilityState === 'visible' && !EVT_SENT) arm(); else clearTimeout(timer);
+      if (document.visibilityState === 'visible' && !SENT) arm(); else clearTimeout(timer);
     });
   }
   gcReady(start);
 
-  // 4) Clean the visible URL: remove any bare ?tag (no "="), keep path+hash only
+  // 4) Clean the visible URL: remove any bare ?token (no "="), keep path+hash only
   function clean(){
     try{
       var s = location.search || '';
@@ -150,9 +151,8 @@
 })();
 </script>
 <script async data-goatcounter="https://v1kstrand.goatcounter.com/count" src="//gc.zgo.at/count.js"></script>
+<!-- Goat Counter End -->
 
-
-  <!-- Goat Counter End -->
   
 </head>
 <body>
