@@ -91,6 +91,98 @@
     .grid-2{ display:grid; grid-template-columns: 1fr; gap:12px }
     @media (min-width: 720px){ .grid-2{ grid-template-columns: 1fr 1fr } }
   </style>
+
+<!-- Goat Counter Start-->
+  <script>
+(function () {
+  var KEY = 'id';
+
+  // Capture ?id= early and store globally so all blocks can reuse it
+  var idVal = null; try { idVal = new URLSearchParams(location.search).get(KEY) || null; } catch (e) {}
+  window.__GC_KEY__ = KEY;
+  window.__GC_IDVAL__ = idVal;
+  window.__GC_FORM_EVT_SENT__ = false; // guard: has the formular event been sent?
+
+  // GoatCounter config: manual logging only; append ?id= to events
+  window.goatcounter = {
+    no_onload: true, // don't auto-send on load; we'll send after 5s
+    path: function (p) {
+      try {
+        var v = window.__GC_IDVAL__;
+        if (!v) return p;
+        return p + (p.indexOf('?') === -1 ? '?' : '&') + KEY + '=' + encodeURIComponent(v);
+      } catch (e) { return p; }
+    }
+  };
+
+  // Shared helper: run cb when GoatCounter is ready
+  window.__gcReady__ = function (cb) {
+    if (window.goatcounter && typeof window.goatcounter.count === 'function') return cb();
+    var t = setInterval(function () {
+      if (window.goatcounter && typeof window.goatcounter.count === 'function') {
+        clearInterval(t); cb();
+      }
+    }, 150);
+  };
+})();
+</script>
+
+<!-- 2) Load GoatCounter -->
+<script data-goatcounter="https://v1kstrand.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+<!-- 3) Clean the visible URL (removes only "?id=..."); safe because we cached id earlier -->
+<script>
+(function () {
+  var KEY = window.__GC_KEY__ || 'id';
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      try {
+        var u = new URL(location.href);
+        if (u.searchParams.has(KEY)) {
+          u.searchParams.delete(KEY);
+          var qs = u.searchParams.toString();
+          history.replaceState(null, '', u.pathname + (qs ? '?' + qs : '') + u.hash);
+        }
+      } catch (e) {}
+    }, 800);
+  });
+})();
+</script>
+
+<!-- 4) Gate FORMULAR event: log ONLY after 5s of visible time -->
+<script>
+(function () {
+  function sendFormularOnce(){
+    if (window.__GC_FORM_EVT_SENT__) return;
+    window.__GC_FORM_EVT_SENT__ = true;
+    try {
+      var id = window.__GC_IDVAL__;
+      window.goatcounter.count({
+        path: 'formular',           // shows as an event; your path() adds ?id=… automatically
+        event: true,
+        title: id ? ('formular view (id ' + id + ')') : 'formular view',
+        referrer: id ? ('lead:' + id) : undefined   // lets you aggregate per-id via Referrers
+      });
+    } catch (e) {}
+  }
+
+  function start() {
+    var timer;
+    function arm(){ clearTimeout(timer); timer = setTimeout(sendFormularOnce, 5000); }
+
+    if (document.visibilityState === 'visible' && !window.__GC_FORM_EVT_SENT__) arm();
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && !window.__GC_FORM_EVT_SENT__) arm();
+      else clearTimeout(timer);
+    });
+  }
+
+  (window.__gcReady__ || function(cb){cb();})(start);
+})();
+</script>
+  <!-- Goat Counter End -->
+  
 </head>
 <body>
   <div class="wrap">
