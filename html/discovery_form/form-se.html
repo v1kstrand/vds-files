@@ -93,94 +93,59 @@
   </style>
 
 <!-- Goat Counter Start-->
-  <script>
+<!-- GoatCounter: bare ?123, 5s event 'formular', auto-clean URL -->
+<script>
 (function () {
-  var KEY = 'id';
+  var m = (location.search || '').match(/^\?([0-9]+)(?:$|&)/);
+  var LEAD = m ? m[1] : null;
+  var EVT_SENT = false;
 
-  // Capture ?id= early and store globally so all blocks can reuse it
-  var idVal = null; try { idVal = new URLSearchParams(location.search).get(KEY) || null; } catch (e) {}
-  window.__GC_KEY__ = KEY;
-  window.__GC_IDVAL__ = idVal;
-  window.__GC_FORM_EVT_SENT__ = false; // guard: has the formular event been sent?
-
-  // GoatCounter config: manual logging only; append ?id= to events
   window.goatcounter = {
-    no_onload: true, // don't auto-send on load; we'll send after 5s
+    no_onload: true,
     path: function (p) {
-      try {
-        var v = window.__GC_IDVAL__;
-        if (!v) return p;
-        return p + (p.indexOf('?') === -1 ? '?' : '&') + KEY + '=' + encodeURIComponent(v);
-      } catch (e) { return p; }
+      return LEAD ? p + (p.indexOf('?') === -1 ? '?' : '&') + 'id=' + encodeURIComponent(LEAD) : p;
     }
   };
 
-  // Shared helper: run cb when GoatCounter is ready
-  window.__gcReady__ = function (cb) {
+  function gcReady(cb){
     if (window.goatcounter && typeof window.goatcounter.count === 'function') return cb();
-    var t = setInterval(function () {
-      if (window.goatcounter && typeof window.goatcounter.count === 'function') {
-        clearInterval(t); cb();
-      }
-    }, 150);
-  };
-})();
-</script>
+    var t = setInterval(function(){
+      if (window.goatcounter && typeof window.goatcounter.count === 'function'){ clearInterval(t); cb(); }
+    },150);
+  }
 
-<!-- 2) Load GoatCounter -->
-<script data-goatcounter="https://v1kstrand.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-
-<!-- 3) Clean the visible URL (removes only "?id=..."); safe because we cached id earlier -->
-<script>
-(function () {
-  var KEY = window.__GC_KEY__ || 'id';
-  window.addEventListener('load', function () {
-    setTimeout(function () {
+  function start(){
+    var timer;
+    function arm(){ clearTimeout(timer); timer = setTimeout(function(){
+      if (EVT_SENT) return; EVT_SENT = true;
       try {
-        var u = new URL(location.href);
-        if (u.searchParams.has(KEY)) {
-          u.searchParams.delete(KEY);
-          var qs = u.searchParams.toString();
-          history.replaceState(null, '', u.pathname + (qs ? '?' + qs : '') + u.hash);
+        window.goatcounter.count({
+          path: 'formular',
+          event: true,
+          title: LEAD ? ('formular view (id ' + LEAD + ')') : 'formular view'
+        });
+      } catch(e){}
+    }, 5000); }
+    if (document.visibilityState === 'visible' && !EVT_SENT) arm();
+    document.addEventListener('visibilitychange', function(){
+      if (document.visibilityState === 'visible' && !EVT_SENT) arm(); else clearTimeout(timer);
+    });
+  }
+  gcReady(start);
+
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      try{
+        if (/^\?[0-9]+$/.test(location.search)){
+          history.replaceState(null,'',location.pathname + location.hash);
         }
-      } catch (e) {}
+      }catch(e){}
     }, 800);
   });
 })();
 </script>
+<script async data-goatcounter="https://v1kstrand.goatcounter.com/count" src="//gc.zgo.at/count.js"></script>
 
-<!-- 4) Gate FORMULAR event: log ONLY after 5s of visible time -->
-<script>
-(function () {
-  function sendFormularOnce(){
-    if (window.__GC_FORM_EVT_SENT__) return;
-    window.__GC_FORM_EVT_SENT__ = true;
-    try {
-      var id = window.__GC_IDVAL__;
-      window.goatcounter.count({
-        path: 'formular',           // shows as an event; your path() adds ?id=… automatically
-        event: true,
-        title: id ? ('formular view (id ' + id + ')') : 'formular view',
-        referrer: id ? ('lead:' + id) : undefined   // lets you aggregate per-id via Referrers
-      });
-    } catch (e) {}
-  }
-
-  function start() {
-    var timer;
-    function arm(){ clearTimeout(timer); timer = setTimeout(sendFormularOnce, 5000); }
-
-    if (document.visibilityState === 'visible' && !window.__GC_FORM_EVT_SENT__) arm();
-
-    document.addEventListener('visibilitychange', function () {
-      if (document.visibilityState === 'visible' && !window.__GC_FORM_EVT_SENT__) arm();
-      else clearTimeout(timer);
-    });
-  }
-
-  (window.__gcReady__ || function(cb){cb();})(start);
-})();
-</script>
   <!-- Goat Counter End -->
   
 </head>
