@@ -93,20 +93,21 @@
   </style>
 
 <!-- Goat Counter Start-->
-<!-- GoatCounter: bare ?123, 5s event 'formular', auto-clean URL -->
+<!-- GoatCounter: bare ?tag (letters/digits . _ -), 5s delayed EVENT named by the tag, auto-clean URL -->
 <script>
 (function () {
-  var m = (location.search || '').match(/^\?([0-9]+)(?:$|&)/);
-  var LEAD = m ? m[1] : null;
+  // 1) Capture bare ?tag (first token before '&'); sanitize to [A-Za-z0-9._-], max 80 chars
+  var m   = (location.search || '').match(/^\?([^=&]+)(?:$|&)/);
+  var TAG = m ? decodeURIComponent(m[1]).replace(/[^A-Za-z0-9._-]/g,'').slice(0,80) : null;
   var EVT_SENT = false;
 
+  // 2) Configure GoatCounter BEFORE loading count.js (no auto pageview; don't append id)
   window.goatcounter = {
     no_onload: true,
-    path: function (p) {
-      return LEAD ? p + (p.indexOf('?') === -1 ? '?' : '&') + 'id=' + encodeURIComponent(LEAD) : p;
-    }
+    path: function (p) { return p; } // don't add id or query params
   };
 
+  // Helper: wait until goatcounter.count exists
   function gcReady(cb){
     if (window.goatcounter && typeof window.goatcounter.count === 'function') return cb();
     var t = setInterval(function(){
@@ -114,15 +115,17 @@
     },150);
   }
 
+  // 3) 5s visible-time gate: send ONE event named exactly as the tag
   function start(){
+    if (!TAG) return; // no tag → don't log
     var timer;
     function arm(){ clearTimeout(timer); timer = setTimeout(function(){
       if (EVT_SENT) return; EVT_SENT = true;
       try {
         window.goatcounter.count({
-          path: 'formular',
+          path: TAG,         // event name = the tag (must not start with '/')
           event: true,
-          title: LEAD ? ('formular view (id ' + LEAD + ')') : 'formular view'
+          title: 'view: ' + TAG
         });
       } catch(e){}
     }, 5000); }
@@ -133,18 +136,21 @@
   }
   gcReady(start);
 
-  window.addEventListener('load', function(){
-    setTimeout(function(){
-      try{
-        if (/^\?[0-9]+$/.test(location.search)){
-          history.replaceState(null,'',location.pathname + location.hash);
-        }
-      }catch(e){}
-    }, 800);
-  });
+  // 4) Clean the visible URL: remove any bare ?tag (no "="), keep path+hash only
+  function clean(){
+    try{
+      var s = location.search || '';
+      if (s.startsWith('?') && s.indexOf('=') === -1) {
+        history.replaceState(null,'', location.pathname + location.hash);
+      }
+    }catch(e){}
+  }
+  if (document.readyState === 'complete') setTimeout(clean, 200);
+  else window.addEventListener('load', function(){ setTimeout(clean, 200); });
 })();
 </script>
 <script async data-goatcounter="https://v1kstrand.goatcounter.com/count" src="//gc.zgo.at/count.js"></script>
+
 
   <!-- Goat Counter End -->
   
