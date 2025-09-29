@@ -25,11 +25,8 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
       color: var(--text);
       letter-spacing: .2px;
-    
-      /* solid base */
+
       background-color: var(--bg);
-    
-      /* smooth, non-tiling glows */
       background-image:
         radial-gradient(1200px 800px at 10% 0%,
           rgba(59,130,246,.16) 0%,
@@ -39,17 +36,13 @@
           rgba(99,102,241,.12) 0%,
           rgba(99,102,241,.06) 40%,
           rgba(99,102,241,0)   75%);
-    
-      background-repeat: no-repeat, no-repeat;  /* prevent “hard restarts” */
-      background-blend-mode: screen;            /* additive overlap */
-      /* optional: stick on scroll (can be janky on iOS)
-      background-attachment: fixed, fixed;
-      */
+      background-repeat: no-repeat, no-repeat;
+      background-blend-mode: screen;
     }
     .wrap{ max-width: 880px; margin: 48px auto; padding: 0 16px; }
     header{ display:flex; align-items:center; gap:14px; margin-bottom:20px; }
     .logo{
-      width:180px; height:48px; /* rektangulär */
+      width:180px; height:48px;
       border-radius:12px; overflow:hidden;
       box-shadow:0 10px 30px rgba(96,165,250,.25);
       background:#0b1220;
@@ -75,11 +68,11 @@
     .chip{ display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; border:1px solid var(--chip-border); background:var(--chip); cursor:pointer; }
     .chip input{ transform:translateY(1px); }
 
-    input[type="email"], input[type="text"], textarea, select{
+    input[type="email"], input[type="text"], input[type="url"], textarea, select{
       width:100%; background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:12px; padding:12px 12px; font-size:15px;
       outline:none; transition:border .15s ease, box-shadow .15s ease;
     }
-    input[type="email"]:focus, input[type="text"]:focus, textarea:focus, select:focus{ border-color: var(--accent); box-shadow:0 0 0 3px rgba(96,165,250,.25) }
+    input[type="email"]:focus, input[type="text"]:focus, input[type="url"]:focus, textarea:focus, select:focus{ border-color: var(--accent); box-shadow:0 0 0 3px rgba(96,165,250,.25) }
     textarea{ min-height:110px; resize:vertical }
 
     .inline-other{ margin-top:10px }
@@ -107,7 +100,7 @@
       </div>
       <div>
         <center><h1>Discovery-formulär</h1></center>
-        <p class="subtitle">Enkla uppskattningar räcker – detta hjälper oss att planera piloten.</p>
+        <p class="subtitle">Enkla uppskattningar räcker – detta hjälper oss att planera er pilot.</p>
       </div>
     </header>
 
@@ -119,27 +112,34 @@
       <input type="hidden" name="redirect_to" value="https://files.vdsai.se/html/discovery_form/thanks.html">
       <p class="note">Vi använder denna information enbart för att förbereda ert kostnadsfria Discovery-projekt.</p>
 
+      <!-- Required: E-post -->
       <div class="group">
         <label for="email">E-post <span class="req" aria-hidden="true">* Obligatoriskt</span></label>
         <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required aria-describedby="emailHelp" />
-        <div id="emailHelp" class="help">Vänligen ange er epost.</div>
+
+      </div>
+
+      <!-- NEW Required: Företagets webbplats -->
+      <div class="group">
+        <label for="company_website">Företagets webbplats <span class="req" aria-hidden="true">*</span></label>
+        <input id="company_website" name="company_website" type="url" inputmode="url" autocomplete="url" required aria-describedby="websiteHelp" placeholder="www.exempel.se" />
+  
       </div>
 
       <div class="grid-2">
         <fieldset>
-          <legend>Välj ert huvudmål <span class="req" aria-hidden="true">*</span></legend>
+          <legend>Välj ert huvudmål</legend>
           <div class="row" role="group" aria-labelledby="pg-help" id="pg-group">
-            <label class="chip"><input type="radio" name="primary_goal" value="Cost/Efficiency" required> Kostnad/Effektivitet</label>
+            <label class="chip"><input type="radio" name="primary_goal" value="Cost/Efficiency"> Kostnad/Effektivitet</label>
             <label class="chip"><input type="radio" name="primary_goal" value="Workflow Automation"> Automatisering av arbetsflöden</label>
-            <label class="chip"><input type="radio" name="primary_goal" value="Search/Retrieval (RAG)"> Sökning/Hämtning (RAG)</label>
             <label class="chip"><input type="radio" name="primary_goal" value="Vision/Images"> Bild/Video/Ljud analys</label>
-            <label class="chip"><input type="radio" name="primary_goal" value="Forecasting/Analytics"> Prognoser/Analys</label>
+            <label class="chip"><input type="radio" name="primary_goal" value="Forecasting/Analytics"> Data prognoser/analys</label>
             <label class="chip"><input type="radio" name="primary_goal" value="Quality/Inspection"> Kvalitet/Inspektion</label>
             <label class="chip"><input type="radio" id="goal_other" name="primary_goal" value="Other"> Annat</label>
           </div>
-          <div id="pg-help" class="help">Vad är er främsta ambition med Discovery projektet?</div>
+
           <div id="goal_other_wrap" class="inline-other hidden">
-            <label for="primary_goal_other" class="help" style="font-weight:600">Om “Annat”, ange mål</label>
+            <label for="primary_goal_other" class="help" style="font-weight:600">Om ”Annat”, ange mål</label>
             <input type="text" id="primary_goal_other" name="primary_goal_other" placeholder="Beskriv ert mål" />
           </div>
           <div id="pg-error" class="error hidden" role="alert">Välj ett huvudmål.</div>
@@ -152,9 +152,8 @@
       </div>
 
       <fieldset>
-        <legend>Ange datakällor <span class="req" aria-hidden="true">*</span></legend>
-        <p id="ds-help" class="help">Välj datakällor som kommer vara tillgängliga under Discovery-projektet.
-        VDS bygger er anpassade AI-modell utifrån denna data</p>
+        <legend>Ange datakällor</legend>
+        <p id="ds-help" class="help">Välj datakällor som kan finnas tillgängliga under Discovery-projektet. VDS bygger er anpassade AI-lösning utifrån denna data.</p>
         <div class="row" role="group" aria-describedby="ds-help">
           <label class="chip"><input type="checkbox" name="data_sources" value="Sample files"> Exempelfiler</label>
           <label class="chip"><input type="checkbox" name="data_sources" value="API/Database"> API/Databas</label>
@@ -165,42 +164,40 @@
           <label class="chip"><input type="checkbox" id="ds_other" name="data_sources" value="Other"> Annat</label>
         </div>
         <div id="ds_other_wrap" class="inline-other hidden">
-          <label for="data_sources_other" class="help" style="font-weight:600">Om “Annat”, ange källor</label>
+          <label for="data_sources_other" class="help" style="font-weight:600">Om ”Annat”, ange källa</label>
           <input type="text" id="data_sources_other" name="data_sources_other" placeholder="Beskriv datakällor" />
         </div>
-        <div id="ds-error" class="error hidden" role="alert">Ange datakällor</div>
+        <div id="ds-error" class="error hidden" role="alert">Ange datakällor.</div>
       </fieldset>
 
       <div class="grid-2">
         <fieldset>
-          <legend>Välj din roll i projektet <span class="req" aria-hidden="true">*</span></legend>
+          <legend>Välj din roll i projektet</legend>
           <div class="row" id="role-group">
-            <label class="chip"><input type="radio" name="role" value="Owner/CEO" required> Ägare/VD</label>
+            <label class="chip"><input type="radio" name="role" value="Owner/CEO"> Ägare/VD</label>
             <label class="chip"><input type="radio" name="role" value="Management"> Ledning/Chef</label>
             <label class="chip"><input type="radio" name="role" value="Project/Product Lead"> Projekt-/Produktledare</label>
-            <label class="chip"><input type="radio" name="role" value="Technical Lead/Developer"> Teknisk ansvarig/Utvecklare</label>
+            <label class="chip"><input type="radio" name="role" value="Technical Lead/Developer"> Teknisk ansvarig/utvecklare</label>
             <label class="chip"><input type="radio" name="role" value="Business/Domain Expert"> Verksamhet/Domänexpert</label>
             <label class="chip"><input type="radio" id="role_other" name="role" value="Other"> Annat</label>
           </div>
           <div id="role_other_wrap" class="inline-other hidden">
-            <label for="role_other_text" class="help" style="font-weight:600">Om “Annat”, ange roll</label>
-            <!-- rename to role_other -->
+            <label for="role_other_text" class="help" style="font-weight:600">Om ”Annat”, ange roll</label>
             <input type="text" id="role_other_text" name="role_other" placeholder="Din roll" />
           </div>
           <div id="role-error" class="error hidden" role="alert">Välj din roll.</div>
         </fieldset>
-      
+
         <fieldset>
-          <legend>Förväntad tillgänglig tid (per vecka) <span class="req" aria-hidden="true">*</span></legend>
+          <legend>Förväntad tillgänglig tid (per vecka)</legend>
           <div class="row" id="time-group">
-            <label class="chip"><input type="radio" name="time" value="< 0.5 h/week" required> &lt; 0,5 h/vecka</label>
+            <label class="chip"><input type="radio" name="time" value="< 0.5 h/week"> &lt; 0,5 h/vecka</label>
             <label class="chip"><input type="radio" name="time" value="0.5–1.0 h/week"> 0,5–1,0 h/vecka</label>
             <label class="chip"><input type="radio" name="time" value="> 1 h/week"> &gt; 1 h/vecka</label>
             <label class="chip"><input type="radio" id="time_other" name="time" value="Other"> Annat</label>
           </div>
           <div id="time_other_wrap" class="inline-other hidden">
-            <label for="time_other_text" class="help" style="font-weight:600">Om “Annat”, ange tid</label>
-            <!-- rename to time_other -->
+            <label for="time_other_text" class="help" style="font-weight:600">Om ”Annat”, ange tid</label>
             <input type="text" id="time_other_text" name="time_other" placeholder="t.ex. 2–3 h varannan vecka" />
           </div>
           <div id="time-error" class="error hidden" role="alert">Välj din förväntade tillgänglighet.</div>
@@ -209,18 +206,19 @@
 
       <div class="group" style="margin-top:18px">
         <button type="submit">Skicka</button>
-        <div class="footer">Dina svar sparas lokalt. Vi delar aldrig din information.</div>
+        <div class="footer">Vi delar aldrig din information.</div>
       </div>
 
       <div id="success" class="success hidden" role="status">Tack! Dina svar sparades lokalt.</div>
       <textarea id="result" class="hidden" readonly></textarea>
-      <input type="text" name="company_website" style="display:none" tabindex="-1" autocomplete="off">
+
+      <!-- Honeypot: renamed so it doesn't clash with real website field -->
+      <input type="text" name="company_webpage_hp" style="display:none" tabindex="-1" autocomplete="off">
     </form>
   </div>
 
   <script>
   (function(){
-
     const $  = (sel) => document.querySelector(sel);
     const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
@@ -234,7 +232,7 @@
     const dsOther        = $('#ds_other');
     const dsOtherWrap    = $('#ds_other_wrap');
 
-    function toggle(el, show){ el.classList.toggle('hidden', !show); }
+    function toggle(el, show){ el && el.classList.toggle('hidden', !show); }
     function updateGoalOther(){ toggle(goalOtherWrap, goalOtherRadio?.checked); }
     function updateRoleOther(){ toggle(roleOtherWrap, roleOtherRadio?.checked); }
     function updateTimeOther(){ toggle(timeOtherWrap, timeOtherRadio?.checked); }
@@ -258,7 +256,23 @@
 
     updateGoalOther(); updateRoleOther(); updateTimeOther(); updateDsOther(); updateDsNoneExclusivity();
 
+    // Auto-prefix https:// on blur so native URL validation passes
+    const websiteEl = $('#company_website');
+    if (websiteEl){
+      websiteEl.addEventListener('blur', () => {
+        const v = websiteEl.value.trim();
+        if (v && !/^https?:\/\//i.test(v)) websiteEl.value = 'https://' + v;
+      });
+    }
+
+    // Honeypot quick check (optional; server should also ignore if filled)
     const form = $('#preDiscoveryForm');
+    form?.addEventListener('submit', (e) => {
+      const hp = document.querySelector('input[name="company_webpage_hp"]');
+      if (hp && hp.value) {
+        e.preventDefault(); // silently drop bot submission
+      }
+    });
   })();
   </script>
 </body>
