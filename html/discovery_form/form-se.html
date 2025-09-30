@@ -92,66 +92,52 @@
     @media (min-width: 720px){ .grid-2{ grid-template-columns: 1fr 1fr } }
   </style>
 
-<!-- Goat Counter Start -->
-<!-- GoatCounter: one event "formular", per-ID via referrer, 5s delay, bare ?token, clean URL -->
+<!-- VDS first-party: one event "formular" after 5s visible time -->
 <script>
 (function () {
-  // 1) Capture bare ?token (first segment before '&'); allow [A-Za-z0-9._-], max 80 chars
-  var m   = (location.search || '').match(/^\?([^=&]+)(?:$|&)/);
+  // 1) Capture bare ?token (no "="), allow [A-Za-z0-9._-], max 80 chars
+  var m = (location.search || '').match(/^\?([^=&]+)(?:$|&)/);
   var TOKEN = m ? decodeURIComponent(m[1]).replace(/[^A-Za-z0-9._-]/g,'').slice(0,80) : null;
-  var SENT = false;
+  if (!TOKEN) return; // no token → don't log
 
-  // 2) Configure GoatCounter BEFORE loading count.js (no auto pageview; keep paths clean)
-  window.goatcounter = {
-    no_onload: true,
-    path: function (p) { return p; } // don't add params to GC path
-  };
-
-  // Helper: wait until goatcounter.count exists
-  function gcReady(cb){
-    if (window.goatcounter && typeof window.goatcounter.count === 'function') return cb();
-    var t = setInterval(function(){
-      if (window.goatcounter && typeof window.goatcounter.count === 'function'){ clearInterval(t); cb(); }
-    },150);
+  // 2) Tiny image ping to first-party collector; add cache-buster
+  function ping() {
+    if (window.__VDS_FORMULAR_SENT__) return;
+    window.__VDS_FORMULAR_SENT__ = true;
+    var img = new Image();
+    img.referrerPolicy = 'no-referrer-when-downgrade';
+    img.src = 'https://forms.vdsai.se/e'
+      + '?ev=' + encodeURIComponent('formular')
+      + '&t='  + encodeURIComponent(TOKEN)
+      + '&u='  + encodeURIComponent(location.pathname || '/')
+      + '&r='  + Math.random().toString(36).slice(2);
   }
 
-  // 3) 5s visible-time gate: send ONE event "formular" with the ID in referrer
-  function start(){
-    if (!TOKEN) return; // no token → don't log
-    var timer;
-    function arm(){ clearTimeout(timer); timer = setTimeout(function(){
-      if (SENT) return; SENT = true;
-      try {
-        window.goatcounter.count({
-          path: 'formular',     // single event bucket
-          event: true,
-          title: 'view',        // optional
-          referrer: TOKEN       // per-ID breakdown appears under Referrers
-        });
-      } catch(e){}
-    }, 5000); }
-    if (document.visibilityState === 'visible' && !SENT) arm();
-    document.addEventListener('visibilitychange', function(){
-      if (document.visibilityState === 'visible' && !SENT) arm(); else clearTimeout(timer);
-    });
-  }
-  gcReady(start);
+  // 3) 5s visible-time gate (simple: resets if tab hides before 5s)
+  var timer;
+  function arm(){ clearTimeout(timer); timer = setTimeout(ping, 5000); }
+  function disarm(){ clearTimeout(timer); }
+  if (document.visibilityState === 'visible') arm();
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible' && !window.__VDS_FORMULAR_SENT__) arm();
+    else disarm();
+  });
 
-  // 4) Clean the visible URL: remove any bare ?token (no "="), keep path+hash only
+  // 4) Clean the visible URL: remove bare ?token (no "="), keep path+hash only
   function clean(){
     try{
       var s = location.search || '';
       if (s.startsWith('?') && s.indexOf('=') === -1) {
-        history.replaceState(null,'', location.pathname + location.hash);
+        history.replaceState(null, '', location.pathname + location.hash);
       }
-    }catch(e){}
+    } catch(_) {}
   }
   if (document.readyState === 'complete') setTimeout(clean, 200);
   else window.addEventListener('load', function(){ setTimeout(clean, 200); });
 })();
 </script>
-<script async data-goatcounter="https://v1kstrand.goatcounter.com/count" src="//gc.zgo.at/count.js"></script>
-<!-- Goat Counter End -->
+  <!-- VDS first-party end -->
+  
 
   
 </head>
