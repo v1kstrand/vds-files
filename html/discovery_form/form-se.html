@@ -94,48 +94,222 @@
 
 <!-- VDS first-party: one event "formular" after 5s visible time -->
 <script>
-(function () {
-  // 1) Capture bare ?token (no "="), allow [A-Za-z0-9._-], max 80 chars
-  var m = (location.search || '').match(/^\?([^=&]+)(?:$|&)/);
-  var TOKEN = m ? decodeURIComponent(m[1]).replace(/[^A-Za-z0-9._-]/g,'').slice(0,80) : null;
-  if (!TOKEN) return; // no token → don't log
+window.__VDS_VIS_DELAY_MS = 3000;
+window.__PAGE_NAME = "formular";
 
-  // 2) Tiny image ping to first-party collector; add cache-buster
-  function ping() {
-    if (window.__VDS_FORMULAR_SENT__) return;
-    window.__VDS_FORMULAR_SENT__ = true;
+(function () {
+  // --- Token: from ?TOKEN, #t=TOKEN, or history.state.__VDS_TOK ---
+  function sanit(s){ return (s||'').replace(/[^A-Za-z0-9._-]/g,'').slice(0,80) || null; }
+  function getTokenFromUrl(){
+    try{
+      var q = location.search || '';
+      if (q.startsWith('?')) {
+        var first = q.slice(1).split('&',1)[0];
+        if (first && first.indexOf('=') === -1) return sanit(decodeURIComponent(first));
+      }
+      var m = (location.hash || '').match(/(?:^#|[&#])t=([^&]+)/);
+      if (m) return sanit(decodeURIComponent(m[1]));
+    }catch(_){}
+    return null;
+  }
+  function getToken(){
+    var t = getTokenFromUrl();
+    if (t) return t;
+    try {
+      var st = history.state;
+      if (st && st.__VDS_TOK) return sanit(st.__VDS_TOK);
+    } catch(_) {}
+    return null;
+  }
+  var TOKEN = getToken();
+  if (!TOKEN) return; // no token → do nothing
+
+  // --- Persist token into history.state so Back restores it later ---
+  try {
+    var st = history.state || {};
+    if (st.__VDS_TOK !== TOKEN) {
+      st.__VDS_TOK = TOKEN;
+      history.replaceState(st, '', location.href);
+    }
+  } catch(_) {}
+
+  // --- CLEAN EARLY: remove token from visible URL immediately ---
+  (function cleanNowIfPresent(){
+    var had = !!getTokenFromUrl(); // was the token actually in the URL?
+    if (!had) return; // if token came from history.state, nothing to clean
+    try {
+      var s = location.search || '';
+      var st = history.state || {};
+      if (s.startsWith('?')){
+        var rest = s.slice(1), first = rest.split('&',1)[0];
+        if (first && first.indexOf('=')===-1){
+          var rem = rest.slice(first.length);
+          var newS = rem.startsWith('&') ? ('?'+rem.slice(1)) : '';
+          history.replaceState(st, '', location.pathname + newS + location.hash);
+        }
+      }
+      if ((location.hash||'').match(/^#t=[^&]+$/)){
+        history.replaceState(st, '', location.pathname + (location.search||''));
+      }
+    } catch(_){}
+  })();
+
+  // --- Propagate token to same-site links by PREPENDING ?TOKEN ---
+  function sameSite(u){
+    var h = (u.hostname||'').toLowerCase(), cur = location.hostname.toLowerCase();
+    return h===cur || h==='vdsai.se' || h.endsWith('.vdsai.se');
+  }
+  function firstBareQuery(u){
+    var s = u.search; if (!s || s.length<2) return null;
+    var first = s.slice(1).split('&',1)[0];
+    return (first && first.indexOf('=')===-1) ? first : null;
+  }
+  function propagate(){
+    var as = document.querySelectorAll('a[href]');
+    for (var i=0;i<as.length;i++){
+      var a = as[i];
+      try{
+        var u = new URL(a.getAttribute('href'), location.href);
+        if (!/^https?:$/.test(u.protocol)) continue; // skip mailto:, tel:, etc.
+        if (!sameSite(u)) continue; // external: leave alone
+        var cur = firstBareQuery(u);
+        if (cur===TOKEN) continue; // already has our token first
+        if (!cur) u.search = u.search ? ('?'+TOKEN+'&'+u.search.slice(1)) : ('?'+TOKEN);
+        a.setAttribute('href', u.toString());
+      }catch(_){}
+    }
+  }
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', propagate);
+  else propagate();
+
+  // --- Image-ping helper (kept as-is to match your endpoint expectations) ---
+  function ping(ev, path){
+    var u = path || location.pathname;
     var img = new Image();
     img.referrerPolicy = 'no-referrer-when-downgrade';
     img.src = 'https://forms.vdsai.se/e'
-      + '?ev=' + encodeURIComponent('formular')
+      + '?ev=' + encodeURIComponent(ev)
       + '&t='  + encodeURIComponent(TOKEN)
-      + '&u='  + encodeURIComponent(location.pathname || '/')
+      + '&u='  + encodeURIComponent(u)
       + '&r='  + Math.random().toString(36).slice(2);
   }
 
-  // 3) 5s visible-time gate (simple: resets if tab hides before 5s)
-  var timer;
-  function arm(){ clearTimeout(timer); timer = setTimeout(ping, 5000); }
-  function disarm(){ clearTimeout(timer); }
-  if (document.visibilityState === 'visible') arm();
-  document.addEventListener('visibilitychange', function(){
-    if (document.visibilityState === 'visible' && !window.__VDS_FORMULAR_SENT__) arm();
-    else disarm();
-  });
+  // ============================================================
+  //                 HUMAN GATE: VisibleOK + GestureOK
+  //             (+ FocusOK on desktop/laptop browsers)
+  // ============================================================
 
-  // 4) Clean the visible URL: remove bare ?token (no "="), keep path+hash only
-  function clean(){
-    try{
-      var s = location.search || '';
-      if (s.startsWith('?') && s.indexOf('=') === -1) {
-        history.replaceState(null, '', location.pathname + location.hash);
-      }
-    } catch(_) {}
+  // --- Platform heuristic: treat “mobile/in-app” as not requiring FocusOK
+  var IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Windows Phone|Mobile/i.test(navigator.userAgent || '');
+
+  // --- Latches
+  var VisibleOK = false;     // becomes true after visible ≥ delay
+  var GestureOK = false;     // becomes true on first trusted user input
+  var FocusOK   = IS_MOBILE ? true : (document.visibilityState === 'visible' && document.hasFocus());
+
+  // --- Single-fire safeguard (per tab/session lifecycle)
+  var sentVisit = false;
+
+  // Optional per-session dedup across reloads / SPA route churn (sessionStorage is per-tab)
+  var SESSION_KEY = '__VDS_HUMAN_SENT__:' + (window.__PAGE_NAME || 'page');
+  try {
+    if (sessionStorage.getItem(SESSION_KEY)) sentVisit = true;
+  } catch(_) {}
+
+  function markSentOnce(){
+    sentVisit = true;
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch(_){}
   }
-  if (document.readyState === 'complete') setTimeout(clean, 200);
-  else window.addEventListener('load', function(){ setTimeout(clean, 200); });
+
+  function maybeFire(){
+    if (sentVisit) return;
+    // Desktop requires FocusOK; mobile does not.
+    var ok = VisibleOK && GestureOK && (IS_MOBILE ? true : FocusOK);
+    if (!ok) return;
+    markSentOnce();
+    ping(window.__PAGE_NAME);
+    removeGestureListeners();
+    // No need to keep timers or extra listeners after firing
+    disarm();
+    window.removeEventListener('focus', onFocus, true);
+    window.removeEventListener('blur', onBlur, true);
+    document.removeEventListener('visibilitychange', onVisChange, true);
+  }
+
+  // --- Visible-time gate (configurable), accumulates only when visible
+  var DELAY  = Math.max(0, +window.__VDS_VIS_DELAY_MS || 5000);
+  var t0     = null, remain = DELAY, timer = null;
+
+  function fireVisibleLatch(){
+    VisibleOK = true;
+    t0 = null;
+    timer = null;
+    maybeFire();
+  }
+  function arm(){
+    if (sentVisit || VisibleOK) return;
+    if (t0 != null) return; // already armed
+    t0 = performance.now();
+    timer = setTimeout(fireVisibleLatch, remain);
+  }
+  function disarm(){
+    if (timer){ clearTimeout(timer); timer = null; }
+    if (t0 != null){
+      remain = Math.max(0, remain - (performance.now() - t0));
+      t0 = null;
+    }
+  }
+  function onVisChange(){
+    if (document.visibilityState === 'visible') arm();
+    else disarm();
+    // FocusOK can update when visibility changes on desktop
+    if (!IS_MOBILE) FocusOK = FocusOK || (document.visibilityState === 'visible' && document.hasFocus());
+    maybeFire();
+  }
+  if (document.visibilityState === 'visible') arm();
+  document.addEventListener('visibilitychange', onVisChange, true);
+
+  // --- Desktop focus latch (ignored on mobile/in-app)
+  function onFocus(){ if (!IS_MOBILE){ FocusOK = true; maybeFire(); } }
+  function onBlur(){ /* keep FocusOK latched once true; no-op */ }
+  if (!IS_MOBILE){
+    // If already focused when script runs, latch it
+    if (document.visibilityState === 'visible' && document.hasFocus()) FocusOK = true;
+    window.addEventListener('focus', onFocus, true);
+    window.addEventListener('blur',  onBlur,  true);
+  }
+
+  // --- GestureOK: first trusted human input → latch
+  function gestureHandler(e){
+    // Only latch if event is genuinely user-generated and page is visible
+    if (!e || e.isTrusted !== true) return;
+    if (document.visibilityState !== 'visible') return;
+    GestureOK = true;
+    removeGestureListeners();
+    maybeFire();
+  }
+  function addGestureListeners(){
+    // Broad coverage across desktop, mobile, and in-app browsers
+    document.addEventListener('pointerdown', gestureHandler, { passive:true, capture:true });
+    document.addEventListener('touchstart',  gestureHandler, { passive:true, capture:true });
+    window.addEventListener('keydown',       gestureHandler, { passive:true, capture:true });
+    // Use wheel (not generic scroll) to reduce scripted scroll noise
+    window.addEventListener('wheel',         gestureHandler, { passive:true, capture:true });
+  }
+  function removeGestureListeners(){
+    document.removeEventListener('pointerdown', gestureHandler, true);
+    document.removeEventListener('touchstart',  gestureHandler, true);
+    window.removeEventListener('keydown',       gestureHandler, true);
+    window.removeEventListener('wheel',         gestureHandler, true);
+  }
+  addGestureListeners();
+
+  // (Optional) If you later want an "Unknown" bucket:
+  // - start a long visibility timer (e.g., 30–60s); if still no GestureOK, send a single "Unknown" and stop.
+  // - Not included here to keep behavior identical except for adding GestureOK.
 })();
 </script>
+
   <!-- VDS first-party end -->
   
 
